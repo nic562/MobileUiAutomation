@@ -5,7 +5,7 @@ from os import environ
 from airtest.core.settings import Settings
 from airtest.core.api import *
 
-from base.my_adb import AdbProxy
+from .my_adb import AdbProxy
 
 LOG_DEBUG = environ.get('LOG_DEBUG', False)
 

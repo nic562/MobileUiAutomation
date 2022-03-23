@@ -4,3 +4,7 @@ venv/
 *.pyc
 
 tmp/
+
+build/
+
+*.egg-info/
