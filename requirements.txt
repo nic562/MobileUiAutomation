@@ -1,0 +1,4 @@
+python-rsa
+tidevice
+git+https://github.com/nic562/python-adb.git@1.3.1#egg=adb
+git+https://github.com/nic562/Airtest.git@1.2.6#egg=airtest
