@@ -4,4 +4,8 @@ services:
     build: .
     image: ui-kit:0.1
     container_name: ui-kit
+    #volumes:
+    #  - /etc/localtime:/etc/localtime:ro
+    #  - /root/.android/adbkey:/root/.android/adbkey
+    #  - /root/.android/adbkey.pub:/root/.android/adbkey.pub
     command: tail -f /root/.pip/pip.conf

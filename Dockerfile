@@ -13,6 +13,7 @@ RUN ls /data \
     && apt install libx11-xcb1 -y \
     && apt autoremove -y \
     && apt install libgl1-mesa-glx -y \
+    && apt install adb -y \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup-init.sh \
     && sh /tmp/rustup-init.sh -y \
     && /bin/bash -c "source $HOME/.cargo/env" \
