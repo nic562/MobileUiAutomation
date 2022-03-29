@@ -159,9 +159,11 @@ class AndroidBaseUI(OsPermission):
     def clear(pkg: str):
         """清理App所有数据，需要到开发者选项中开启’禁止权限监控‘"""
         try:
-            clear_app(pkg)
+            rs = clear_app(pkg)
+            if rs and rs.find('Exception') != -1:
+                raise Exception(rs)
         except Exception as e:
-            log.warning(f'Clear App Failed: {e}')
+            raise Exception(f'清理 App 失败: {e}\n请尝试到开发者选项中开启’禁止权限监控‘！')
 
     @staticmethod
     def launch_app(pkg: str, activity: str = None):

@@ -90,6 +90,7 @@ class AdbInterface:
 class AdbBase(AdbInterface):
     # 基于ADB的常用功能扩展实现
     exp_version = re.compile(r'versionName=([\w\.]+)')
+    __cpu_scaling_max_freq_enable = True
 
     def go_back(self):
         return self.run_shell('input keyevent BACK')
@@ -207,6 +208,8 @@ class AdbBase(AdbInterface):
 
     def get_cpu_x_curr_freq(self, idx: int) -> int:
         """获取某个CPU核的当前频率
+        /sys/devices/system/cpu/cpu{x}/cpufreq/ 目录下，cpuinfo_cur_freq 和 scaling_cur_freq 均有记录该CPU的当前频率，
+        不同的是，cpuinfo_cur_freq 代表的是CPU硬件层面支持的频率； scaling_cur_freq 是指在当前工作模式（可变，例如：省电、高性能等）下的实际工作频率
         :param idx: CPU核的下标
         """
         f = self.run_shell(f'cat /sys/devices/system/cpu/cpu{idx}/cpufreq/scaling_cur_freq')
@@ -214,14 +217,29 @@ class AdbBase(AdbInterface):
 
     def get_cpu_x_max_freq(self, idx: int) -> int:
         """获取某个CPU核的最大频率
-        注意：如果提示文件 提示 Permission denied 权限不足，则关闭手机的 USB 调试，和开发者模式，重启手机，再重新开启开发者以及USB调试
+        /sys/devices/system/cpu/cpu{x}/cpufreq/ 目录下，cpuinfo_max_freq 和 scaling_max_freq 均有记录该CPU的最高频率，
+        不同的是，cpuinfo_max_freq 代表的是CPU硬件层面支持的最高频率； scaling_max_freq 是指在当前工作模式下限制的最高工作频率
+        注意：如果读取文件 提示 Permission denied 权限不足，该文件部分在设备中的权限可能被锁定，
+        请尝试关闭手机的 USB 调试，和开发者模式，重启手机，再重新开启开发者以及USB调试
         :param idx: CPU核的下标
         """
-        f = self.run_shell(f'cat /sys/devices/system/cpu/cpu{idx}/cpufreq/scaling_max_freq')
+        if self.__cpu_scaling_max_freq_enable:
+            file = 'scaling_max_freq'
+            on_error = '现将尝试读取`cpuinfo_max_freq`数值，可能对最终结果造成一定的误差，若需获取最准确数据'
+        else:
+            file = 'cpuinfo_max_freq'
+            on_error = '无法继续进行测试'
+        f = self.run_shell(f'cat /sys/devices/system/cpu/cpu{idx}/cpufreq/{file}')
         try:
             return int(f)
         except ValueError:
-            raise RuntimeError(f'文件读取遇到错误: {f}\n请关闭手机的开发者模式，重启手机后再尝试重新开启开发者模式并开启USB调试后进行测试.')
+            on_error = f'''文件`{file}`读取遇到错误: {f}\n{on_error}\n
+            请尝试关闭手机的开发者模式，重启手机后再尝试重新开启开发者模式并开启USB调试后进行测试.'''
+        if file == 'cpuinfo_max_freq':
+            raise Exception(on_error)
+        self.__cpu_scaling_max_freq_enable = False
+        logging.warning(on_error)
+        return self.get_cpu_x_max_freq(idx)
 
     def get_cpu_freq(self) -> float:
         """计算CPU当前频率占比
