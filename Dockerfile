@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.9
 COPY sources /data
 RUN ls /data \
     && mv /data/debian-sources.list /etc/apt/sources.list \
@@ -6,7 +6,8 @@ RUN ls /data \
     && apt update \
     && apt -f install \
     && pip install -U pip \
-    && pip install numpy==1.19.3 \
+    && cd /tmp && wget https://pypi.tuna.tsinghua.edu.cn/packages/c3/8d/2ae53d96a92a66b8daa3dfb2dd6cf4bfcb8e3d4148bdd713c8fc7de83141/numpy-1.19.3-cp39-cp39-manylinux2010_x86_64.whl \
+    && pip install ./numpy-1.19.3-cp39-cp39-manylinux2010_x86_64.whl \
     && apt install cmake -y \
     && apt install libusb-dev -y \
     && apt install libusb-1.0-0-dev -y \
